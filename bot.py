@@ -18,36 +18,29 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 logging.basicConfig(level=logging.INFO)
 
-# Состояния викторины
 class QuizState(StatesGroup):
     waiting_for_answer = State()
     collecting_feedback = State()
 
-# Хранилище баллов пользователей: user_id -> Counter(animal_key -> score)
-user_scores = {}
-# Текущий индекс вопроса
-user_question_index = {}
+user_scores = {}          # user_id -> Counter
+user_question_index = {}  # user_id -> int
 
 def get_keyboard(options):
-    """Создаёт инлайн-клавиатуру для вариантов ответа"""
     buttons = []
     for i, option in enumerate(options):
         buttons.append([InlineKeyboardButton(text=option["text"], callback_data=f"answer_{i}")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def calculate_result(scores: Counter):
-    """Определяет животное с максимальным баллом, при равенстве выбирает случайно из лидеров"""
     if not scores:
         return None
     max_score = max(scores.values())
     leaders = [animal for animal, score in scores.items() if score == max_score]
-    # Случайный выбор при одинаковых баллах
     return random.choice(leaders)
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
-    # Сброс состояния
     await state.clear()
     user_scores[user_id] = Counter()
     user_question_index[user_id] = 0
@@ -76,7 +69,7 @@ async def ask_question(message: Message, user_id: int):
         keyboard = get_keyboard(q["options"])
         await message.answer(f"Вопрос {idx+1}/{len(questions)}:\n{q['question']}", reply_markup=keyboard)
     else:
-        # Викторина пройдена, выдаем результат
+        # Все вопросы отвечены — показываем результат ровно один раз
         await show_result(message, user_id)
 
 @dp.callback_query(F.data.startswith("answer_"), QuizState.waiting_for_answer)
@@ -93,17 +86,13 @@ async def process_answer(callback: types.CallbackQuery, state: FSMContext):
         return
 
     option = q["options"][answer_idx]
-    # Начисляем баллы
     for animal, weight in option["weights"].items():
         user_scores[user_id][animal] += weight
 
-    # Удаляем клавиатуру у предыдущего сообщения
     await callback.message.edit_reply_markup(reply_markup=None)
-    # Переходим к следующему вопросу
     user_question_index[user_id] += 1
-    await ask_question(callback.message, user_id)
+    await ask_question(callback.message, user_id)   # ← вызовет show_result, когда нужно
     await callback.answer()
-
 
 async def show_result(message: Message, user_id: int):
     scores = user_scores.get(user_id, Counter())
@@ -114,26 +103,27 @@ async def show_result(message: Message, user_id: int):
     if winner_key is None:
         await message.answer("Не удалось определить тотемное животное. Попробуй ещё раз /start")
         return
+
     animal = ANIMALS[winner_key]
-    text = f"<b>Твоё тотемное животное — {animal['name']}!</b>\n\n{animal['description']}"
+
+    # Полный текст с описанием и информацией об опеке
+    full_text = (
+        f"<b>Твоё тотемное животное — {animal['name']}!</b>\n\n"
+        f"{animal['description']}\n\n"
+        f"{animal['patronage_info']}"
+    )
 
     # Отправляем изображение
     try:
         photo = FSInputFile(f"images/{animal['image']}")
-        text = (
-            f"<b>Твоё тотемное животное — {animal['name']}!</b>\n\n"
-            f"{animal['description']}\n\n"
-            f"{animal['patronage_info']}"
-        )
-        await message.answer_photo(photo, caption=text, parse_mode="HTML")
-    except Exception as e:
-        await message.answer(text + "\n\n(изображение не найдено, но это не страшно 😉)", parse_mode="HTML")
+        await message.answer_photo(photo, caption=full_text, parse_mode="HTML")
+    except Exception:
+        await message.answer(full_text + "\n\n(изображение не найдено, но это не страшно 😉)", parse_mode="HTML")
 
-    # Получаем информацию о боте (чтобы узнать его username)
     me = await bot.me()
     bot_username = me.username
 
-    # Клавиатура с дополнительными действиями
+    # Клавиатура с действиями выводится ОДИН раз
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="ℹ️ Узнать о программе опеки", callback_data="patronage_info")],
         [InlineKeyboardButton(text="📤 Поделиться результатом",
@@ -163,18 +153,14 @@ async def contact(callback: types.CallbackQuery):
         winner_key = calculate_result(scores)
         if winner_key:
             animal_name = ANIMALS[winner_key]["name"]
-            winner_score = scores[winner_key]  # баллы победителя
+            winner_score = scores[winner_key]
             result_text = (
                 f"Пользователь @{callback.from_user.username} (id: {user_id}) "
                 f"получил тотем: {animal_name}.\n"
                 f"Баллы: {winner_score}"
             )
         else:
-            animal_name = "неизвестно"
-            result_text = (
-                f"Пользователь @{callback.from_user.username} (id: {user_id}) "
-                f"получил тотем: {animal_name}.\n"
-            )
+            result_text = f"Пользователь @{callback.from_user.username} (id: {user_id}) получил тотем: неизвестно."
     else:
         result_text = f"Пользователь @{callback.from_user.username} ещё не прошёл викторину."
     try:
@@ -202,7 +188,6 @@ async def collect_feedback(message: Message, state: FSMContext):
     await message.answer("Спасибо за ваш отзыв! 🦒 Мы стали лучше благодаря вам.")
     await state.clear()
 
-# Запуск бота
 async def main():
     await dp.start_polling(bot)
 
