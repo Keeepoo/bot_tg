@@ -1,40 +1,42 @@
-ANIMALS = {
+# База данных обитателей зоопарка
+ZOO_INHABITANTS = {
     "tiger": {
-        "name": "Амурский тигр",
-        "description": "Ты сильный, независимый и любишь одиночество. Амурский тигр — символ дикой природы.",
-        "image": "tiger.jpg",
-        "patronage_info": "Узнай больше на сайте https://moscowzoo.ru/animals/kinds/amurskiy_tigr"
+        "title": "Амурский тигр",
+        "bio": "Сильный и самостоятельный хищник, предпочитающий уединение. Тигр — гордость дикой природы.",
+        "photo": "tiger.jpg",
+        "sponsor_link": "Оформить опекунство: https://moscowzoo.ru/animals/kinds/amurskiy_tigr"
     },
     "polar_bear": {
-        "name": "Белый медведь",
-        "description": "Ты вынослив, могуч и не боишься холода. Белый медведь — настоящий полярный странник.",
-        "image": "polar_bear.jpg",
-        "patronage_info": "Подробнее: https://moscowzoo.ru/animals/kinds/belyy_medved"
+        "title": "Белый медведь",
+        "bio": "Выносливый северный житель, не боящийся лютых морозов. Настоящий странник Арктики.",
+        "photo": "polar_bear.jpg",
+        "sponsor_link": "Подробнее об опеке: https://moscowzoo.ru/animals/kinds/belyy_medved"
     },
     "meerkat": {
-        "name": "Сурикат",
-        "description": "Ты общителен, бдителен и ценишь семью. Сурикаты всегда стоят на страже друг за друга.",
-        "image": "meerkat.jpg",
-        "patronage_info": "Присоединяйся к Клубу друзей: https://moscowzoo.ru/animals/kinds/surikat"
+        "title": "Сурикат",
+        "bio": "Компанейский и внимательный зверёк, который всегда предупредит семью об опасности.",
+        "photo": "meerkat.jpg",
+        "sponsor_link": "Вступить в программу: https://moscowzoo.ru/animals/kinds/surikat"
     },
     "flamingo": {
-        "name": "Фламинго",
-        "description": "Ты грациозен, ярок и любишь быть в центре внимания. Розовый фламинго — душа компании.",
-        "image": "flamingo.jpg",
-        "patronage_info": "Поддержи зоопарк: https://moscowzoo.ru/animals/kinds/rozovyy_flamingo"
+        "title": "Фламинго",
+        "bio": "Элегантная яркая птица, обожающая быть в эпицентре событий. Душа любой компании.",
+        "photo": "flamingo.jpg",
+        "sponsor_link": "Поддержать зоосад: https://moscowzoo.ru/animals/kinds/rozovyy_flamingo"
     },
     "elephant": {
-        "name": "Азиатский слон",
-        "description": "Ты мудр, нетороплив и очень привязан к близким. Слон — воплощение семейных ценностей.",
-        "image": "elephant.jpg",
-        "patronage_info": "Стань опекуном: https://moscowzoo.ru/animals/kinds/aziatskiy_slon"
+        "title": "Азиатский слон",
+        "bio": "Мудрый и степенный великан, трепетно заботящийся о родных. Символ семейного тепла.",
+        "photo": "elephant.jpg",
+        "sponsor_link": "Стать попечителем: https://moscowzoo.ru/animals/kinds/aziatskiy_slon"
     },
     "snow_leopard": {
-        "name": "Снежный барс (ирбис)",
-        "description": "Ты скрытен, грациозен и привык к высоте. Снежный барс — загадочный дух гор.",
-        "image": "snow_leopard.jpg",
-        "patronage_info": "Помоги сохранить этот редкий вид: https://moscowzoo.ru/animals/kinds/irbis_snezhnyy_bars"
+        "title": "Снежный барс (ирбис)",
+        "bio": "Таинственный горный житель, привыкший к высоте и одиночеству. Легендарный дух вершин.",
+        "photo": "snow_leopard.jpg",
+        "sponsor_link": "Сохранить исчезающий вид: https://moscowzoo.ru/animals/kinds/irbis_snezhnyy_bars"
     }
 }
 
-ANIMAL_KEYS = list(ANIMALS.keys())
+# Список идентификаторов для быстрого доступа
+AVAILABLE_SPECIES = list(ZOO_INHABITANTS.keys())
